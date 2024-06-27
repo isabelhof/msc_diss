@@ -3,7 +3,7 @@ import glob
 import rasterio
 import geopandas as gpd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 from shapely.geometry import Point
 from collections import Counter
 import random
@@ -16,13 +16,31 @@ training_data = gpd.read_file(shapefile_path)
 
 # Directory containing tiled .tif files
 input_folder = 'subset-testing/tiled'
-output_folder = 'subset-testing/classified/rf'
+output_folder = 'subset-testing/classified/svm'
 
 # Create output directory if it doesn't exist
 os.makedirs(output_folder, exist_ok=True)
 
 # Get list of all .tif files in the input folder
 tif_files = glob.glob(os.path.join(input_folder, '*.tif'))
+
+"""
+# OPTIONAL: define specific tiles to use for training
+
+# List of specific .tif files to use for training
+specific_tiles = [
+    'subset-testing/tiled/tile1.tif',
+    'subset-testing/tiled/tile2.tif',
+    'subset-testing/tiled/tile3.tif',
+    'subset-testing/tiled/tile4.tif',
+    'subset-testing/tiled/tile5.tif'
+]
+
+# Verify that all specified tiles exist
+for tile_path in specific_tiles:
+    if not os.path.isfile(tile_path):
+        raise FileNotFoundError(f"Specified tile {tile_path} does not exist.")
+"""
 
 # Step 2: Extract training data
 def extract_training_data_from_all_tiles(tif_files, training_data):
@@ -58,8 +76,8 @@ class_counts = Counter(training_labels)
 for cls, count in class_counts.items():
     print(f"Class {cls}: {count} samples")
 
-# Step 3: Train the Random Forest classifier
-clf = RandomForestClassifier(n_estimators=100, random_state=42)
+# Step 3: Train the SVM classifier
+clf = SVC(kernel='rbf', random_state=42)
 clf.fit(training_samples, training_labels)
 
 # Step 4: Classify each tile
@@ -77,7 +95,7 @@ for raster_path in tif_files:
         classified = y_pred.reshape(rows, cols)
         
         # Step 5: Save the classified raster
-        tile_name = os.path.basename(raster_path).replace('spatial_subset_', 'random_forest_')
+        tile_name = os.path.basename(raster_path).replace('spatial_subset_', 'svm_')
         output_filename = f"{tile_name}"
         output_path = os.path.join(output_folder, output_filename)
         raster_meta.update(dtype=rasterio.uint8, count=1)
