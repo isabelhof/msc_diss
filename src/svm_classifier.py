@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 SVM Land Cover Classification
 
@@ -30,6 +32,7 @@ from sklearn.metrics import accuracy_score, classification_report
 import rasterio
 from rasterio.plot import reshape_as_image, reshape_as_raster
 from concurrent.futures import ProcessPoolExecutor
+from tqdm import tqdm
 
 # Function to train and evaluate SVM model
 def train_and_evaluate_svm(csv_file, C, kernel, gamma, random_state):
@@ -54,10 +57,10 @@ def train_and_evaluate_svm(csv_file, C, kernel, gamma, random_state):
     y = data.iloc[:, 0].values   # Assuming the first column is 'land_cover_class'
     
     # Split the data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=random_state)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=random_state)
     
     # Train SVM model
-    model = SVC(C=C, kernel=kernel, gamma=gamma, random_state=random_state)
+    model = SVC(C=C, kernel=kernel, gamma=gamma, random_state=random_state, probability=False)
     model.fit(X_train, y_train)
     
     # Evaluate the model
@@ -72,6 +75,12 @@ def train_and_evaluate_svm(csv_file, C, kernel, gamma, random_state):
 
 # Function to process a single .tif file
 def process_tif_file(filename, input_folder, output_folder, model):
+    output_path = os.path.join(output_folder, f'predicted_{filename}')
+    
+    # Skip processing if the output file already exists
+    if os.path.exists(output_path):
+        return
+    
     filepath = os.path.join(input_folder, filename)
     with rasterio.open(filepath) as src:
         # Read the image data
@@ -90,7 +99,6 @@ def process_tif_file(filename, input_folder, output_folder, model):
         reshaped_predictions = predictions.reshape((n_rows, n_cols))
         
         # Write the predictions to a new .tif file
-        output_path = os.path.join(output_folder, f'predicted_{filename}')
         with rasterio.open(
             output_path,
             'w',
@@ -121,16 +129,18 @@ def apply_model_to_tifs(model, input_folder, output_folder, max_workers=4):
     tif_files = [f for f in os.listdir(input_folder) if f.endswith('.tif')]
     
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        # Use tqdm to show progress bar
         futures = [executor.submit(process_tif_file, filename, input_folder, output_folder, model) for filename in tif_files]
         
-        for future in futures:
+        # Monitor progress
+        for future in tqdm(futures, total=len(tif_files), desc="Processing TIFF files"):
             future.result()  # Wait for all futures to complete
 
 # Parameters
-csv_file = 'data/testing/training_data_spectra_FINAL.csv'
-input_folder = 'data/testing/rasters'
-output_folder = 'data/testing/classified/SVM'
-C = 1.0          # Regularization parameter
+csv_file = 'data/testing/training_data_spectra_SVM.csv'
+input_folder = 'data/hs-tiled/flightline-1'
+output_folder = 'data/outputs/SVM/flightline-1'
+C = 10   # Regularization parameter
 kernel = 'rbf'   # Kernel type
 gamma = 'scale'  # Kernel coefficient
 random_state = 42   # Set your random state for reproducibility

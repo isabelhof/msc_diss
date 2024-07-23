@@ -47,14 +47,14 @@ import time
 ### STEP 1: importing data
 
 # reading in training dataset, which has a class (numeric) attribute, a label (string) attribute, and a column for each band reflectance
-df = pd.read_csv('data/testing/training-data/training_data_spectra_FINAL.csv')
+df = pd.read_csv('data/testing/training_data_spectra_SVM.csv')
 
 # assigning features and target variable
 X = df.drop(columns=['Class', 'Label'])
 y = df['Class']
 
 # splitting into training and testing datasets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=54)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=54)
 
 ### STEP 2: Baseline Random Forest model
 
@@ -87,7 +87,7 @@ param_dist = {
     'min_samples_split': randint(2, 32),
     'min_samples_leaf': randint(1, 32),
     'max_features': ['sqrt', 'log2'],
-    'criterion': ["squared_error", "absolute_error", "friedman_mse", "poisson"]
+    'criterion': ["squared_error", "poisson", "friedman_mse"]
 }
 
 # Initialize the RandomForestRegressor

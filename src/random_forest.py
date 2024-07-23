@@ -140,9 +140,9 @@ def apply_model_to_tifs(model, input_folder, output_folder, max_workers=4):
             future.result()  # Wait for all futures to complete
 
 # Parameters
-csv_file = 'data/testing/training_data_spectra_FINAL.csv'
+csv_file = 'data/testing/training_data_spectra_SVM.csv'
 input_folder = 'data/hs-tiled/flightline-1'
-output_folder = 'data/outputs/RF'
+output_folder = 'data/outputs/svm_testing'
 n_estimators = 476  # Set your optimal number of trees
 max_depth = 48      # Set your optimal max depth
 min_samples_leaf = 1
