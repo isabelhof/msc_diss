@@ -1,5 +1,4 @@
 import os
-import glob
 from osgeo import gdal
 
 # function to extract specific bands and create an RGB image
@@ -31,22 +30,14 @@ def extract_rgb(input_file, output_file, bands):
     
     print(f"RGB image created successfully: {output_file}")
 
-# directory containing the input files
-input_dir = 'testing-data'
-output_dir = 'RGB-images'
-
-# ensure the output directory exists
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
+# input and output files
+input_file = '/home/s1941095/scratch/msc_diss/raw/flightline-1/HBNX-1-20230616-2_02_VNIR_1800_SN00888_quac_specPol_rectGeRot.img'
+output_file = 'data/rgb_2_02.tif'
 
 # bands to extract for RGB
 bands = [75, 46, 19]
 
-# process each .i,g file in the input directory
-for input_file in glob.glob(os.path.join(input_dir, '*.img')):
-    filename = os.path.basename(input_file)
-    output_file = os.path.join(output_dir, filename.replace('_VNIR_1800_SN00888_quac_specPol_rectGeRot.img', '_RGB.tif'))
-    extract_rgb(input_file, output_file, bands)
+# process the input .img file
+extract_rgb(input_file, output_file, bands)
 
 print("Processing complete.")
-
