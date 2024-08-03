@@ -56,6 +56,6 @@ def resample_folder(input_folder, output_folder, target_resolution):
 # Define input and output folders and target resolution
 input_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_full_class/reprojected/flightline-3'
 output_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_full_class/resampled/flightline-3'
-target_resolution = 0.35  # Target resolution in meters
+target_resolution = 3  # Target resolution in meters
 
 resample_folder(input_folder, output_folder, target_resolution)

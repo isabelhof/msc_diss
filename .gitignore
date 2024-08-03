@@ -2,4 +2,4 @@
 *.img
 data/
 venv/
-
+raw/

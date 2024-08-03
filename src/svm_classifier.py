@@ -30,7 +30,7 @@ from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 import rasterio
-from rasterio.plot import reshape_as_image, reshape_as_raster
+import numpy as np
 from concurrent.futures import ProcessPoolExecutor
 from tqdm import tqdm
 
@@ -52,7 +52,7 @@ def train_and_evaluate_svm(csv_file, C, kernel, gamma, random_state):
     # Load training data
     data = pd.read_csv(csv_file)
     
-    # Assuming the first two columns are labels and the rest are features
+    # Assuming the first column is labels and the rest are features
     X = data.iloc[:, 2:].values  # Omitting the first two columns
     y = data.iloc[:, 0].values   # Assuming the first column is 'land_cover_class'
     
@@ -73,44 +73,60 @@ def train_and_evaluate_svm(csv_file, C, kernel, gamma, random_state):
     
     return model
 
-# Function to process a single .tif file
-def process_tif_file(filename, input_folder, output_folder, model):
+# Function to process a single .tif file in chunks
+def process_tif_file(args):
+    filename, input_folder, output_folder, model = args
+    filepath = os.path.join(input_folder, filename)
     output_path = os.path.join(output_folder, f'predicted_{filename}')
     
-    # Skip processing if the output file already exists
     if os.path.exists(output_path):
         return
     
-    filepath = os.path.join(input_folder, filename)
     with rasterio.open(filepath) as src:
-        # Read the image data
-        image = src.read()
+        transform = src.transform
+        crs = src.crs
+        dtype = src.dtypes[0]
+        n_bands = src.count
+        tile_size = 1000  # Size of the tile (chunk)
         
-        # Reshape the image data for prediction
-        reshaped_image = reshape_as_image(image)
-        n_rows, n_cols, n_bands = reshaped_image.shape
+        # Calculate number of tiles in x and y directions
+        width = src.width
+        height = src.height
         
-        reshaped_image = reshaped_image.reshape((n_rows * n_cols, n_bands))
-        
-        # Predict land cover classes
-        predictions = model.predict(reshaped_image)
-        
-        # Reshape predictions back to original image shape
-        reshaped_predictions = predictions.reshape((n_rows, n_cols))
-        
-        # Write the predictions to a new .tif file
-        with rasterio.open(
-            output_path,
-            'w',
-            driver='GTiff',
-            height=n_rows,
-            width=n_cols,
-            count=1,
-            dtype=rasterio.uint8,
-            crs=src.crs,
-            transform=src.transform
-        ) as dst:
-            dst.write(reshaped_predictions, 1)
+        for i in range(0, width, tile_size):
+            for j in range(0, height, tile_size):
+                # Define the window
+                window = rasterio.windows.Window(i, j, min(tile_size, width - i), min(tile_size, height - j))
+                
+                # Read the chunk
+                chunk = src.read(window=window)
+                
+                # Reshape the chunk for prediction
+                chunk_reshaped = chunk.reshape((n_bands, -1)).T
+                predictions = model.predict(chunk_reshaped)
+                
+                # Reshape predictions back to chunk shape
+                predictions_reshaped = predictions.reshape((min(tile_size, height - j), min(tile_size, width - i)))
+                
+                # Write the predictions to the output file
+                if i == 0 and j == 0:
+                    # Create the output file
+                    with rasterio.open(
+                        output_path,
+                        'w',
+                        driver='GTiff',
+                        height=height,
+                        width=width,
+                        count=1,
+                        dtype=rasterio.uint8,
+                        crs=crs,
+                        transform=src.transform
+                    ) as dst:
+                        dst.write(predictions_reshaped, 1)
+                else:
+                    # Append to the output file
+                    with rasterio.open(output_path, 'r+') as dst:
+                        dst.write(predictions_reshaped, 1, window=window)
 
 # Function to apply the model to .tif files in a folder
 def apply_model_to_tifs(model, input_folder, output_folder, max_workers=4):
@@ -126,20 +142,25 @@ def apply_model_to_tifs(model, input_folder, output_folder, max_workers=4):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     
-    tif_files = [f for f in os.listdir(input_folder) if f.endswith('.tif')]
-    
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        # Use tqdm to show progress bar
-        futures = [executor.submit(process_tif_file, filename, input_folder, output_folder, model) for filename in tif_files]
+    for root, dirs, files in os.walk(input_folder):
+        for dir in dirs:
+            subfolder_path = os.path.join(root, dir)
+            output_subfolder_path = subfolder_path.replace(input_folder, output_folder, 1)
+            if not os.path.exists(output_subfolder_path):
+                os.makedirs(output_subfolder_path)
         
-        # Monitor progress
-        for future in tqdm(futures, total=len(tif_files), desc="Processing TIFF files"):
-            future.result()  # Wait for all futures to complete
+        tif_files = [f for f in files if f.endswith('.img')]
+        args = [(filename, root, root.replace(input_folder, output_folder, 1), model) for filename in tif_files]
+        
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            # Use tqdm to show progress bar
+            for _ in tqdm(executor.map(process_tif_file, args), total=len(args), desc=f"Processing files in {root}"):
+                pass
 
 # Parameters
-csv_file = 'data/testing/training_data_spectra_SVM.csv'
-input_folder = 'data/hs-tiled/flightline-1'
-output_folder = 'data/outputs/SVM/flightline-1'
+csv_file = 'data/two_class_training_FINAL.csv'
+input_folder = 'raw'
+output_folder = 'data/outputs/SVM'
 C = 10   # Regularization parameter
 kernel = 'rbf'   # Kernel type
 gamma = 'scale'  # Kernel coefficient
