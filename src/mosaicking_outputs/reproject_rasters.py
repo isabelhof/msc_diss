@@ -4,8 +4,8 @@ import os
 import subprocess
 
 # Define input and output directories
-input_dir = "raw/flightline-1"
-output_dir = "raw/reprojected"
+input_dir = "data/outputs/RF_full_class/survey-1"
+output_dir = "data/outputs/RF_full_class/survey-1/reprojected"
 
 # Create output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)

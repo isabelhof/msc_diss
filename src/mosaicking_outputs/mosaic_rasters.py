@@ -39,7 +39,7 @@ def mosaic_rasters(input_folder, output_path):
     print(f'Mosaic completed and saved to {output_path}.')
 
 # Define input folder and output file path
-input_folder = '/home/s1941095/scratch/msc_diss/data/outputs/SVM/compressed'
-output_path = '/home/s1941095/scratch/msc_diss/data/outputs/SVM/mosaic-full-area.tif'
+input_folder = '/home/s1941095/scratch/msc_diss/data/outputs/test'
+output_path = '/home/s1941095/scratch/msc_diss/data/outputs//mosaic-test.tif'
 
 mosaic_rasters(input_folder, output_path)

@@ -1,5 +1,3 @@
-## STEP TWO OF MERGING OUTPUTS
-
 import os
 import rasterio
 from rasterio.enums import Resampling
@@ -20,7 +18,7 @@ def resample_raster(input_path, output_path, target_resolution):
             'transform': transform,
             'width': new_width,
             'height': new_height,
-            'dtype': 'uint8'  # Use 'uint16' or other types if needed
+            'dtype': 'uint8'
         })
         
         # Create a new raster with the resampled data
@@ -54,8 +52,8 @@ def resample_folder(input_folder, output_folder, target_resolution):
     print('Resampling completed.')
 
 # Define input and output folders and target resolution
-input_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_full_class/reprojected/flightline-3'
-output_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_full_class/resampled/flightline-3'
-target_resolution = 3  # Target resolution in meters
+input_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_full_class/reprojected/survey-1'
+output_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_full_class/resampled/survey-1'
+target_resolution = 0.35  # Target resolution in meters
 
 resample_folder(input_folder, output_folder, target_resolution)
