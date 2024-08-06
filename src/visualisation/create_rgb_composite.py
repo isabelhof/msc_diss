@@ -30,9 +30,9 @@ def extract_rgb(input_file, output_file, bands):
     
     print(f"RGB image created successfully: {output_file}")
 
-# input and output files
-input_file = '/home/s1941095/scratch/msc_diss/raw/flightline-1/HBNX-1-20230616-2_02_VNIR_1800_SN00888_quac_specPol_rectGeRot.img'
-output_file = 'data/rgb_2_02.tif'
+# input and output filesraw/HBIX-1-20230902/HBIX-1-20230902-1_02_VNIR_1800_SN00888_quac_specPol_rectGeRot.img
+input_file = '/home/s1941095/scratch/msc_diss/raw/HBNX-1-20230616/HBNX-1-20230616-2_01_VNIR_1800_SN00888_quac_specPol_rectGeRot.img'
+output_file = '/home/s1941095/scratch/msc_diss/data/rgb_2_01.tif'
 
 # bands to extract for RGB
 bands = [75, 46, 19]

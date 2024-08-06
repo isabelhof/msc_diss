@@ -52,8 +52,8 @@ def resample_folder(input_folder, output_folder, target_resolution):
     print('Resampling completed.')
 
 # Define input and output folders and target resolution
-input_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_full_class/reprojected/survey-1'
-output_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_full_class/resampled/survey-1'
+input_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_full_class/reprojected/survey-2'
+output_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_full_class/resampled/survey-2'
 target_resolution = 0.35  # Target resolution in meters
 
 resample_folder(input_folder, output_folder, target_resolution)

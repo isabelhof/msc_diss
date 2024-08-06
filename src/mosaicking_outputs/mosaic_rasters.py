@@ -1,45 +1,48 @@
-## STEP FOUR OF MERGING OUTPUTS
-
 import os
-import rasterio
-from rasterio.merge import merge
-import numpy as np
+import sys
+import subprocess
 
-def mosaic_rasters(input_folder, output_path):
-    # List of raster files
-    raster_files = [os.path.join(input_folder, f) for f in os.listdir(input_folder) if f.endswith('.tif')]
-    
-    if not raster_files:
-        raise ValueError("No .tif files found in the input folder.")
+def merge_tifs(input_folder, output_file, nodata_value=0):
+    """
+    Merges GeoTIFF files in a specified folder using gdal_merge.py with LZW compression.
 
-    # Open raster files
-    rasters = [rasterio.open(rf) for rf in raster_files]
-    
-    # Merge rasters
-    mosaic, out_transform = merge(rasters)
-    
-    # Metadata for the output raster
-    out_meta = rasters[0].meta.copy()
-    out_meta.update({
-        "driver": "GTiff",
-        "count": 1,
-        "height": mosaic.shape[1],
-        "width": mosaic.shape[2],
-        "transform": out_transform
-    })
-    
-    # Write the mosaic to a new file
-    with rasterio.open(output_path, "w", **out_meta) as dest:
-        dest.write(mosaic[0], 1)
-    
-    # Close all raster files
-    for raster in rasters:
-        raster.close()
-    
-    print(f'Mosaic completed and saved to {output_path}.')
+    Parameters:
+    input_folder (str): The directory containing input GeoTIFF files.
+    output_file (str): The path for the output merged GeoTIFF file.
+    nodata_value (int or float, optional): The value to treat as no-data. Default is 0.
 
-# Define input folder and output file path
-input_folder = '/home/s1941095/scratch/msc_diss/data/outputs/test'
-output_path = '/home/s1941095/scratch/msc_diss/data/outputs//mosaic-test.tif'
+    Raises:
+    FileNotFoundError: If no GeoTIFF files are found in the input folder.
+    RuntimeError: If the gdal_merge.py command fails.
+    """
+    # Gather all .tif files from the input folder
+    tiff_files = [os.path.join(input_folder, f) for f in os.listdir(input_folder) if f.endswith('.tif')]
+    
+    if not tiff_files:
+        raise FileNotFoundError("No .tif files found in the input folder.")
 
-mosaic_rasters(input_folder, output_path)
+    # Prepare the gdal_merge.py command
+    command = [
+        "gdal_merge.py", 
+        "-o", output_file, 
+        "-n", str(nodata_value), 
+        "-a_nodata", str(nodata_value), 
+        "-ot", "Byte", 
+        "-co", "COMPRESS=LZW"
+    ] + tiff_files
+
+    # Execute the command
+    try:
+        subprocess.run(command, check=True)
+        print(f"Merged file created successfully: {output_file}")
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"gdal_merge.py failed: {e}")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python merge_tifs.py input_folder output_file")
+    else:
+        input_folder = sys.argv[1]
+        output_file = sys.argv[2]
+        merge_tifs(input_folder, output_file)
+

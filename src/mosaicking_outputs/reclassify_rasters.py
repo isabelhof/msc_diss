@@ -3,8 +3,8 @@ import numpy as np
 import rasterio
 
 # Define input and output directories
-input_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_full_class/resampled/survey-3'
-output_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_full_class/masked/survey-3'
+input_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_two_class/resampled/survey-1'
+output_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_two_class/masked/survey-1'
 
 # Ensure output folder exists
 os.makedirs(output_folder, exist_ok=True)
@@ -20,7 +20,7 @@ for filename in os.listdir(input_folder):
             data = src.read(1)  # Read the first band
 
             # Mask pixels with value 8 as nodata (0)
-            data_masked = np.where(data == 8, 0, data)
+            data_masked = np.where(data == 0, 2, data)
             
             # Update metadata to reflect new nodata value
             meta = src.meta.copy()
@@ -30,4 +30,4 @@ for filename in os.listdir(input_folder):
             with rasterio.open(output_path, 'w', **meta) as dst:
                 dst.write(data_masked, 1)
 
-print('Masking complete. Check the output folder for results.')
+print('Reclassification complete. Check the output folder for results.')

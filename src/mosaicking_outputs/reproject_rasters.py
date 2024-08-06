@@ -5,7 +5,7 @@ import subprocess
 
 # Define input and output directories
 input_dir = "data/outputs/RF_full_class/survey-1"
-output_dir = "data/outputs/RF_full_class/survey-1/reprojected"
+output_dir = "data/outputs/RF_full_class/reprojected/survey-1"
 
 # Create output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
