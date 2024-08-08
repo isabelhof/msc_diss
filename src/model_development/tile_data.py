@@ -1,5 +1,6 @@
+#!/usr/bin/env python
+
 # create 1000 x 1000 pixel tiles from the original full-band hs data
-# repeat for each of the three periods of aerial data collection
 
 # import packages
 import os
@@ -26,8 +27,8 @@ def create_tiles(input_dir, output_dir, tile_size):
         ])
 
 # define variables
-input_dir = '/home/s1941095/ds_s1941095/msc_dissertation/testing-data'
-output_dir = '/home/s1941095/scratch/msc_diss/data/hs-tiled/flightline-1'
+input_dir = '/home/s1941095/ds_s1941095/dissfinalertation/testing-data'
+output_dir = '/home/s1941095/scratch/dissfinal/data/hs-tiled/flightline-1'
 tile_size = 1000 
 
 # run the create_tiles function

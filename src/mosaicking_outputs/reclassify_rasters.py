@@ -3,8 +3,8 @@ import numpy as np
 import rasterio
 
 # Define input and output directories
-input_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_two_class/resampled/survey-1'
-output_folder = '/home/s1941095/scratch/msc_diss/data/outputs/RF_two_class/masked/survey-1'
+input_folder = '/home/s1941095/scratch/dissfinal/data/outputs/RF_two_class/resampled/survey-1'
+output_folder = '/home/s1941095/scratch/dissfinal/data/outputs/RF_two_class/masked/survey-1'
 
 # Ensure output folder exists
 os.makedirs(output_folder, exist_ok=True)

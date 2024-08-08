@@ -29,7 +29,7 @@ Dependencies:
 - time
 
 Usage:
-- Ensure the CSV file 'training_data_spectra_FINAL.csv' is available in the specified path.
+- Ensure the CSV file is available in the specified path.
 - Run the script to perform Random Forest regression and hyperparameter tuning on the dataset.
 
 Author: Isabel Hofmockel
